@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+}
+
+group 'vlaship.spark'
+version '0.0.1'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    mainClassFile = "vlaship.spark.SparkApp"
+    sparkVersion = "2.12:2.4.4"
+}
+
+dependencies {
+    implementation 'org.projectlombok:lombok:1.18.10'
+    implementation "org.apache.spark:spark-sql_$sparkVersion"
+    implementation "org.apache.spark:spark-core_$sparkVersion"
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = mainClassFile
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+}
+
+jar {
+    manifest { attributes 'Main-Class': mainClassFile }
+    include { sourceSets.main.output.classesDir }
+    zip64 true
+}
+
+//shadowJar {
+//    classifier = 'shadow'
+//    append 'reference.conf'
+//    dependencies {
+//
+//    }
+//}
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}
